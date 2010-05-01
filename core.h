@@ -26,3 +26,6 @@ extern struct meteor_type {
     int density;
     float velocity, angular_velocity;
   } meteor_types[METEOR_TYPE_MAX];
+
+extern float frand();
+extern void meteor_explode(struct meteor *meteor);

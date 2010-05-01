@@ -1,5 +1,6 @@
 #include <cairo.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include "SDL.h"
 #include "core.h"
@@ -7,9 +8,9 @@
 struct meteor meteors[METEOR_MAX];
 
 struct meteor_type meteor_types[METEOR_TYPE_MAX] = {
-    0, 3, 1/32.0, 8, 1/2.0, 4/1.0,
-    0, 4, 3/32.0, 3, 3/8.0, 1/2.0,
-    0, 8, 3/16.0, 1, 1/8.0, 1/8.0
+    0, 3, 1/32.0, 12, 1/2.0, 4/1.0,
+    0, 4, 3/32.0,  3, 3/8.0, 1/2.0,
+    0, 8, 3/16.0,  1, 1/8.0, 1/8.0
   };
 
 struct polygon {
@@ -88,6 +89,44 @@ void init_meteors() {
 
 void game_quit() {
   running = 0;
+}
+
+float frand() {
+  return (float) rand() / RAND_MAX;
+}
+
+void meteor_explode(struct meteor *meteor) {
+  int type = meteor->type;
+  int density;
+  int i, j;
+
+  if (type != 0) {
+    density = meteor_types[type-1].density / meteor_types[type].density;
+    for (j = 0; j < density; j = j + 1) {
+      for (i = 0; i < METEOR_MAX; i = i + 1) {
+        float v = meteor_types[type-1].velocity;
+        float av = meteor_types[type-1].angular_velocity;
+        float a = 2*M_PI * frand();
+
+        if (meteors[i].is_alive) { continue; }
+
+        meteors[i].is_alive = 1;
+        meteors[i].type = type - 1;
+
+        meteors[i].x = meteor->x;
+        meteors[i].y = meteor->y;
+        meteors[i].a = 2*M_PI * frand();
+
+        meteors[i].xv = v * -sin(a);
+        meteors[i].yv = v *  cos(a);
+        meteors[i].av = 2*M_PI * av * (frand() - 1/2.0);
+
+        break;
+      }
+    }
+  }
+
+  meteor->is_alive = 0;
 }
 
 int main(int argc, char **argv) {

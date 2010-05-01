@@ -1,12 +1,7 @@
 #include <math.h>
-#include <stdlib.h>
 
 #include "SDL.h"
 #include "core.h"
-
-float frand() {
-  return (float) rand() / RAND_MAX;
-}
 
 void generate_meteors() {
   int i, j, k;
