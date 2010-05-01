@@ -140,11 +140,42 @@ int main(int argc, char **argv) {
         cairo_translate(cr, x, y);
         cairo_rotate(cr, a);
 
-        cairo_new_path(cr);
+        cairo_new_sub_path(cr);
         for (i = 0; i < polygon->n; i = i + 1) {
           cairo_line_to(cr, polygon->v[i][0] + j, polygon->v[i][1]);
         }
         cairo_close_path(cr);
+
+        cairo_set_matrix(cr, &cairo_matrix_display);
+        cairo_translate(cr, x - WIDTH/SCALE, y);
+        cairo_rotate(cr, a);
+
+        cairo_new_sub_path(cr);
+        for (i = 0; i < polygon->n; i = i + 1) {
+          cairo_line_to(cr, polygon->v[i][0] + j, polygon->v[i][1]);
+        }
+        cairo_close_path(cr);
+
+        cairo_set_matrix(cr, &cairo_matrix_display);
+        cairo_translate(cr, x, y - HEIGHT/SCALE);
+        cairo_rotate(cr, a);
+
+        cairo_new_sub_path(cr);
+        for (i = 0; i < polygon->n; i = i + 1) {
+          cairo_line_to(cr, polygon->v[i][0] + j, polygon->v[i][1]);
+        }
+        cairo_close_path(cr);
+
+        cairo_set_matrix(cr, &cairo_matrix_display);
+        cairo_translate(cr, x - WIDTH/SCALE, y - HEIGHT/SCALE);
+        cairo_rotate(cr, a);
+
+        cairo_new_sub_path(cr);
+        for (i = 0; i < polygon->n; i = i + 1) {
+          cairo_line_to(cr, polygon->v[i][0] + j, polygon->v[i][1]);
+        }
+        cairo_close_path(cr);
+
         cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
         cairo_fill(cr);
       }
