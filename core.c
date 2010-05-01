@@ -2,24 +2,9 @@
 #include <cairo.h>
 #include <math.h>
 
-#define WIDTH   320
-#define HEIGHT  240
-#define FPS      30
+#include "core.h"
 
-#define ASPECT  ( (float) WIDTH / HEIGHT )
-#define SCALE   ( sqrt(HEIGHT * WIDTH) )
-
-#define POLYGON_VERTEX_MAX  16
-#define POLYGON_MAX          3
-
-#define METEOR_MAX       16
-#define METEOR_TYPE_MAX   3
-
-struct meteor {
-    int is_alive, type;
-    int x, y, a;
-    int xv, yv, av;
-  } meteors[METEOR_MAX];
+struct meteor meteors[METEOR_MAX];
 
 struct meteor_type {
     int polygon;
@@ -82,7 +67,6 @@ int main(int argc, char **argv) {
   cairo_matrix_t cairo_matrix_display;
 
   int running;
-  struct polygon polygons[POLYGON_MAX];
 
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK);
   SDL_ShowCursor(0);
@@ -126,6 +110,8 @@ int main(int argc, char **argv) {
       return -1;
     };
     init_meteors();
+
+    game_init();
   }
 
   SDL_LockSurface(sdl_surface);
@@ -133,7 +119,6 @@ int main(int argc, char **argv) {
 
     { /* Render Frame */
       int i, j;
-      struct polygon *polygon;
 
       cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
       cairo_paint(cr);
@@ -141,17 +126,19 @@ int main(int argc, char **argv) {
 
       for (j = 0; j < METEOR_MAX; j = j + 1) {
         float a, x, y;
+        struct polygon *polygon;
 
         if (!meteors[j].is_alive) { continue; }
 
         a = meteors[j].a;
         x = meteors[j].x;
         y = meteors[j].y;
+
         polygon = &polygons[meteor_types[meteors[j].type].polygon];
 
         cairo_set_matrix(cr, &cairo_matrix_display);
-        cairo_rotate(cr, a);
         cairo_translate(cr, x, y);
+        cairo_rotate(cr, a);
 
         cairo_new_path(cr);
         for (i = 0; i < polygon->n; i = i + 1) {
@@ -179,10 +166,20 @@ int main(int argc, char **argv) {
     }
 
     { /* Game Logic */
+      int i;
+
       SDL_PumpEvents();
       keystate = SDL_GetKeyState(NULL);
       if (keystate[SDLK_q]) {
         running = 0;
+      }
+
+      for (i = 0; i < METEOR_MAX; i = i + 1) {
+        if (!meteors[i].is_alive) { continue; }
+
+        meteors[i].x = meteors[i].x + meteors[i].xv / FPS;
+        meteors[i].y = meteors[i].y + meteors[i].yv / FPS;
+        meteors[i].a = meteors[i].a + meteors[i].av / FPS;
       }
     }
 
