@@ -22,9 +22,30 @@ struct key_binding {
     void (*callback)();
   } key_bindings[KEY_BINDING_MAX];
 
-void bind_key(int key, void (*callback)()) {
-  key_bindings[0].key = key;
-  key_bindings[0].callback = callback;
+int running;
+
+void init_key_bindings() {
+  int i;
+
+  for (i = 0; i < KEY_BINDING_MAX; i = i + 1) {
+    key_bindings[i].key = 0;
+  }
+}
+
+int bind_key(int key, void (*callback)()) {
+  int i;
+
+  for (i = 0; i < KEY_BINDING_MAX; i = i + 1) {
+    if (key_bindings[i].key == 0) {
+      break;
+    }
+  }
+  if (i == KEY_BINDING_MAX) { return -1; }
+
+  key_bindings[i].key = key;
+  key_bindings[i].callback = callback;
+
+  return 0;
 }
 
 int ngon(struct polygon *polygon, int n, float scale) {
@@ -65,14 +86,16 @@ void init_meteors() {
   }
 }
 
+void game_quit() {
+  running = 0;
+}
+
 int main(int argc, char **argv) {
   SDL_Surface *sdl_surface;
   Uint8 *keystate;
   Uint32 next_frame, now;
   cairo_t *cr;
   cairo_matrix_t cairo_matrix_display;
-
-  int running;
 
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK);
   SDL_ShowCursor(0);
@@ -116,6 +139,9 @@ int main(int argc, char **argv) {
       return -1;
     };
     init_meteors();
+
+    init_key_bindings();
+    bind_key(SDLK_q, game_quit);
 
     game_init();
   }
@@ -203,18 +229,20 @@ int main(int argc, char **argv) {
     }
 
     { /* Game Logic */
+      SDL_Event event;
       int i;
 
-      SDL_PumpEvents();
-      keystate = SDL_GetKeyState(NULL);
-      if (keystate[SDLK_q]) {
-        running = 0;
-      }
+      while ( SDL_PollEvent(&event) ) {
+        if (event.type == SDL_KEYDOWN) {
+
       for (i = 0; i < KEY_BINDING_MAX; i = i + 1) {
         if (!key_bindings[i].key) { continue; }
 
-        if (keystate[key_bindings[i].key]) {
+        if (event.key.keysym.sym == key_bindings[i].key) {
           key_bindings[i].callback();
+        }
+      }
+
         }
       }
 
