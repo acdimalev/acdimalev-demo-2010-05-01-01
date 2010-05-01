@@ -11,6 +11,8 @@
 #define METEOR_MAX       32
 #define METEOR_TYPE_MAX   3
 
+#define KEY_BINDING_MAX   8
+
 extern struct meteor {
     int is_alive, type;
     float x, y, a;

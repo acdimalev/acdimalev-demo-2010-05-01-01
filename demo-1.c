@@ -1,13 +1,14 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include "SDL.h"
 #include "core.h"
 
 float frand() {
   return (float) rand() / RAND_MAX;
 }
 
-void game_init() {
+void generate_meteors() {
   int i, j, k;
 
   k = 0;
@@ -31,4 +32,9 @@ void game_init() {
       k = k + 1;
     }
   }
+}
+
+void game_init() {
+  generate_meteors();
+  bind_key(SDLK_SPACE, generate_meteors);
 }

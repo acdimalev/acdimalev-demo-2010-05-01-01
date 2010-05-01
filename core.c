@@ -1,7 +1,7 @@
-#include "SDL.h"
 #include <cairo.h>
 #include <math.h>
 
+#include "SDL.h"
 #include "core.h"
 
 struct meteor meteors[METEOR_MAX];
@@ -16,6 +16,16 @@ struct polygon {
     int n;
     float v[POLYGON_VERTEX_MAX][2];
   } polygons[POLYGON_MAX];
+
+struct key_binding {
+    int key;
+    void (*callback)();
+  } key_bindings[KEY_BINDING_MAX];
+
+void bind_key(int key, void (*callback)()) {
+  key_bindings[0].key = key;
+  key_bindings[0].callback = callback;
+}
 
 int ngon(struct polygon *polygon, int n, float scale) {
   float a, aoff;
@@ -199,6 +209,13 @@ int main(int argc, char **argv) {
       keystate = SDL_GetKeyState(NULL);
       if (keystate[SDLK_q]) {
         running = 0;
+      }
+      for (i = 0; i < KEY_BINDING_MAX; i = i + 1) {
+        if (!key_bindings[i].key) { continue; }
+
+        if (keystate[key_bindings[i].key]) {
+          key_bindings[i].callback();
+        }
       }
 
       for (i = 0; i < METEOR_MAX; i = i + 1) {
