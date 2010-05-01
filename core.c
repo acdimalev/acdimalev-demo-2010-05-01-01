@@ -211,6 +211,19 @@ int main(int argc, char **argv) {
         meteors[i].x = meteors[i].x + meteors[i].xv / FPS;
         meteors[i].y = meteors[i].y + meteors[i].yv / FPS;
         meteors[i].a = meteors[i].a + meteors[i].av / FPS;
+
+        if (meteors[i].x < 0) {
+          meteors[i].x = meteors[i].x + WIDTH/SCALE;
+        }
+        if (meteors[i].x > WIDTH/SCALE) {
+          meteors[i].x = meteors[i].x - WIDTH/SCALE;
+        }
+        if (meteors[i].y < 0) {
+          meteors[i].y = meteors[i].y + HEIGHT/SCALE;
+        }
+        if (meteors[i].y > HEIGHT/SCALE) {
+          meteors[i].y = meteors[i].y - HEIGHT/SCALE;
+        }
       }
     }
 

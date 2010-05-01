@@ -8,7 +8,7 @@ void game_init() {
   meteors[0].x = 0;
   meteors[0].y = 0;
   meteors[0].a = 0;
-  meteors[0].xv = 1;
+  meteors[0].xv = 1/4.0;
   meteors[0].yv = 0;
-  meteors[0].av = 2*M_PI;
+  meteors[0].av = 2*M_PI * 1/4.0;
 }
