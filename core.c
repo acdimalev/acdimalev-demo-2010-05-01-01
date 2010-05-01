@@ -4,32 +4,46 @@
 
 #define WIDTH   320
 #define HEIGHT  240
-#define FPS     30
+#define FPS      30
 
-#define SCALE  (HEIGHT / 4.0)
+#define ASPECT  ( (float) WIDTH / HEIGHT )
+#define SCALE   ( sqrt(HEIGHT * WIDTH) )
 
-#define POLYGON_MAX_VERTICES  16
-#define POLYGON_MAX            3
+#define POLYGON_VERTEX_MAX  16
+#define POLYGON_MAX          3
+
+#define METEOR_MAX       16
+#define METEOR_TYPE_MAX   3
+
+struct meteor {
+    int is_alive, type;
+    int x, y, a;
+    int xv, yv, av;
+  } meteors[METEOR_MAX];
+
+struct meteor_type {
+    int polygon;
+    int sides;
+    float scale;
+  } meteor_types[METEOR_TYPE_MAX] = {
+    0, 3, 1/8.0,
+    0, 4, 1/4.0,
+    0, 8, 1/2.0
+  };
 
 struct polygon {
     int n;
-    float v[POLYGON_MAX_VERTICES][2];
-  };
+    float v[POLYGON_VERTEX_MAX][2];
+  } polygons[POLYGON_MAX];
 
-int ngon(struct polygon *polygon, int n, int odd, float scale) {
+int ngon(struct polygon *polygon, int n, float scale) {
   float a, aoff;
   int i;
-
-  if (odd) {
-    aoff = 0;
-  } else {
-    aoff = 2*M_PI * (1.0 / n) / 2; // half a step
-  }
 
   polygon->n = n;
 
   for (i = 0; i < n; i = i + 1) {
-    a = 2*M_PI * (float) i / n + aoff;
+    a = 2*M_PI * (float) i / n;
     polygon->v[i][0] = scale * -sin(a);
     polygon->v[i][1] = scale *  cos(a);
   }
@@ -37,11 +51,35 @@ int ngon(struct polygon *polygon, int n, int odd, float scale) {
   return 0;
 }
 
+int init_meteor_types() {
+  int i;
+
+  for (i = 0; i < METEOR_TYPE_MAX; i = i + 1) {
+    struct polygon *polygon = &polygons[i];
+    int   sides = meteor_types[i].sides;
+    float scale = meteor_types[i].scale;
+
+    if ( ngon(polygon, sides, scale) ) { return -1; }
+    meteor_types[i].polygon = i;
+  }
+
+  return 0;
+}
+
+void init_meteors() {
+  int i;
+
+  for (i = 0; i < METEOR_MAX; i = i + 1) {
+    meteors[i].is_alive = 0;
+  }
+}
+
 int main(int argc, char **argv) {
   SDL_Surface *sdl_surface;
   Uint8 *keystate;
   Uint32 next_frame, now;
   cairo_t *cr;
+  cairo_matrix_t cairo_matrix_display;
 
   int running;
   struct polygon polygons[POLYGON_MAX];
@@ -64,12 +102,18 @@ int main(int argc, char **argv) {
     cairo_surface_destroy(cr_surface);
   }
 
-  // Cartesian
-  cairo_translate(cr, WIDTH/2.0, HEIGHT/2.0);
-  cairo_scale(cr, 1, -1);
+  {
+    cairo_matrix_t *m = &cairo_matrix_display;
 
-  // fixed scale
-  cairo_scale(cr, SCALE, SCALE);
+    cairo_matrix_init_identity(m);
+
+    // Cartesian
+    cairo_matrix_translate(m, WIDTH/2.0, HEIGHT/2.0);
+    cairo_matrix_scale(m, 1, -1);
+
+    // fixed scale
+    cairo_matrix_scale(m, SCALE, SCALE);
+  }
 
   /* Initialize Delay */
   next_frame = 1024.0 / FPS;
@@ -77,9 +121,11 @@ int main(int argc, char **argv) {
   { /* Game Logic */
     running = 1;
 
-    ngon(&polygons[0], 8, 0, 1/2.0);
-    ngon(&polygons[1], 4, 0, 1/4.0);
-    ngon(&polygons[2], 3, 1, 1/8.0);
+    if ( init_meteor_types() ) {
+      SDL_Quit();
+      return -1;
+    };
+    init_meteors();
   }
 
   SDL_LockSurface(sdl_surface);
@@ -93,8 +139,19 @@ int main(int argc, char **argv) {
       cairo_paint(cr);
       cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 
-      for (j = 0; j < POLYGON_MAX; j = j + 1) {
-        polygon = &polygons[j];
+      for (j = 0; j < METEOR_MAX; j = j + 1) {
+        float a, x, y;
+
+        if (!meteors[j].is_alive) { continue; }
+
+        a = meteors[j].a;
+        x = meteors[j].x;
+        y = meteors[j].y;
+        polygon = &polygons[meteor_types[meteors[j].type].polygon];
+
+        cairo_set_matrix(cr, &cairo_matrix_display);
+        cairo_rotate(cr, a);
+        cairo_translate(cr, x, y);
 
         cairo_new_path(cr);
         for (i = 0; i < polygon->n; i = i + 1) {
