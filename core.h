@@ -8,7 +8,7 @@
 #define POLYGON_VERTEX_MAX  16
 #define POLYGON_MAX          3
 
-#define METEOR_MAX       16
+#define METEOR_MAX       32
 #define METEOR_TYPE_MAX   3
 
 extern struct meteor {
@@ -16,3 +16,11 @@ extern struct meteor {
     float x, y, a;
     float xv, yv, av;
   } meteors[METEOR_MAX];
+
+extern struct meteor_type {
+    int polygon;
+    int sides;
+    float scale;
+    int density;
+    float velocity, angular_velocity;
+  } meteor_types[METEOR_TYPE_MAX];

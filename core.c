@@ -6,14 +6,10 @@
 
 struct meteor meteors[METEOR_MAX];
 
-struct meteor_type {
-    int polygon;
-    int sides;
-    float scale;
-  } meteor_types[METEOR_TYPE_MAX] = {
-    0, 3, 1/8.0,
-    0, 4, 1/4.0,
-    0, 8, 1/2.0
+struct meteor_type meteor_types[METEOR_TYPE_MAX] = {
+    0, 3, 1/32.0, 8, 1/2.0, 4/1.0,
+    0, 4, 3/32.0, 3, 3/8.0, 1/2.0,
+    0, 8, 3/16.0, 1, 1/8.0, 1/8.0
   };
 
 struct polygon {
@@ -142,7 +138,7 @@ int main(int argc, char **argv) {
 
         cairo_new_sub_path(cr);
         for (i = 0; i < polygon->n; i = i + 1) {
-          cairo_line_to(cr, polygon->v[i][0] + j, polygon->v[i][1]);
+          cairo_line_to(cr, polygon->v[i][0], polygon->v[i][1]);
         }
         cairo_close_path(cr);
 
@@ -152,7 +148,7 @@ int main(int argc, char **argv) {
 
         cairo_new_sub_path(cr);
         for (i = 0; i < polygon->n; i = i + 1) {
-          cairo_line_to(cr, polygon->v[i][0] + j, polygon->v[i][1]);
+          cairo_line_to(cr, polygon->v[i][0], polygon->v[i][1]);
         }
         cairo_close_path(cr);
 
@@ -162,7 +158,7 @@ int main(int argc, char **argv) {
 
         cairo_new_sub_path(cr);
         for (i = 0; i < polygon->n; i = i + 1) {
-          cairo_line_to(cr, polygon->v[i][0] + j, polygon->v[i][1]);
+          cairo_line_to(cr, polygon->v[i][0], polygon->v[i][1]);
         }
         cairo_close_path(cr);
 
@@ -172,7 +168,7 @@ int main(int argc, char **argv) {
 
         cairo_new_sub_path(cr);
         for (i = 0; i < polygon->n; i = i + 1) {
-          cairo_line_to(cr, polygon->v[i][0] + j, polygon->v[i][1]);
+          cairo_line_to(cr, polygon->v[i][0], polygon->v[i][1]);
         }
         cairo_close_path(cr);
 

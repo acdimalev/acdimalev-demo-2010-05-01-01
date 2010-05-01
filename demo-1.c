@@ -1,14 +1,34 @@
 #include <math.h>
+#include <stdlib.h>
 
 #include "core.h"
 
+float frand() {
+  return (float) rand() / RAND_MAX;
+}
+
 void game_init() {
-  meteors[0].is_alive = 1;
-  meteors[0].type = 0;
-  meteors[0].x = 0;
-  meteors[0].y = 0;
-  meteors[0].a = 0;
-  meteors[0].xv = 1/4.0;
-  meteors[0].yv = 0;
-  meteors[0].av = 2*M_PI * 1/4.0;
+  int i, j, k;
+
+  k = 0;
+  for (j = 0; j < METEOR_TYPE_MAX; j = j + 1) {
+    for (i = 0; i < meteor_types[j].density; i = i + 1) {
+      float v = meteor_types[j].velocity;
+      float av = meteor_types[j].angular_velocity;
+      float a = 2*M_PI * frand();
+
+      meteors[k].is_alive = 1;
+      meteors[k].type = j;
+
+      meteors[k].x = WIDTH/SCALE * frand();
+      meteors[k].y = HEIGHT/SCALE * frand();
+      meteors[k].a = 2*M_PI * frand();
+
+      meteors[k].xv = v * -sin(a);
+      meteors[k].yv = v *  cos(a);
+      meteors[k].av = 2*M_PI * av * (frand() - 1/2.0);
+
+      k = k + 1;
+    }
+  }
 }
